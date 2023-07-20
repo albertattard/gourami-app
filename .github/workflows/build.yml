@@ -2,16 +2,9 @@ name: Build Application
 
 on: [ push ]
 
-#env:
-#  REGISTRY: ghcr.io
-
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
-
-#    permissions:
-#      contents: read
-#      packages: write
 
     steps:
       - name: Checkout the code
@@ -32,45 +25,33 @@ jobs:
         with:
           arguments: check bootJar
 
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7
 
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@4c0219f9ac95b02789c1075625400b2acbff50b1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4c0219f9ac95b02789c1075625400b2acbff50b1
 #        with:
 #          version: v0.11.2
 
       - name: Log in to Docker Hub
-        # uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-#      - name: Log in to the Container registry
-#        # uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-#        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
-#        with:
-#          registry: ${{ env.REGISTRY }}
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-#          images: |
-#            ${{ env.REGISTRY }}/${{ github.repository }}
-#            albertattard/gourami-app
           images: |
-            albertattard/gourami-app
+            ${{ secrets.DOCKER_USERNAME }}/gourami-app
 
       - name: Build and push Docker image
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
           file: ./container/Dockerfile
-          # platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
