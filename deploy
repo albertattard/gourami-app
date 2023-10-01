@@ -2,7 +2,7 @@
 
 set -e
 
-./gradlew clean check bootJar
+./mvnw clean package
 
 echo "${DC_PAT}" | docker login -u albertattard --password-stdin
 docker buildx use multi-platform-builder

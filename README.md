@@ -4,7 +4,7 @@
 
 | Name   | Version  | Used to                                           |
 | ------ | -------- | ------------------------------------------------- |
-| Java   | `17.0.8` | build the project                                 |
+| Java   | `21`     | build the project                                 |
 | Docker | `24.0.4` | create the container image and push to repository |
 
 ## Useful commands
@@ -12,7 +12,7 @@
 - Build the application
 
   ```shell
-  $ ./gradle clean bootJar
+  $ ./mvnw clean package
   ```
 
 - Set up the multi-platform builder
@@ -21,36 +21,19 @@
   $ docker buildx ls
   ```
 
+  This is based on an
+  [open issue](https://github.com/abiosoft/colima/issues/764) in colima.
+
   ```shell
   $ docker buildx create \
     --name multi-platform-builder \
-    --driver docker-container \
-    --bootstrap
+    --driver-opt 'image=moby/buildkit:v0.12.1-rootless' \
+    --bootstrap \
+    --use
   ```
 
   ```shell
   $ docker buildx use multi-platform-builder
-  ```
-
-- Run the local image
-
-  ```shell
-  $ docker run \
-    --rm \
-    --name gourami-app \
-    --detach \
-    --publish 8080:8080 \
-    gourami-app
-  ```
-
-  ```shell
-  $ curl http://localhost:8080/actuator/health | jq
-  ```
-
-  ```json
-  {
-    "status": "UP"
-  }
   ```
 
 - Build the image and load it locally
@@ -58,9 +41,30 @@
   ```shell
   $ docker build \
     --file=container/Dockerfile \
-    --tag gourami-app \
+    --tag gourami-app:local \
     --load \
     .
+  ```
+
+- Run the local image
+
+  ```shell
+  $ docker run \
+    --rm \
+    --detach \
+    --name gourami-app \
+    --publish 8080:8080 \
+    gourami-app:local
+  ```
+
+  ```shell
+  $ curl http://localhost:8080/api/public/actuator/health | jq
+  ```
+
+  ```json
+  {
+    "status": "UP"
+  }
   ```
 
 - Build the image and push it to GitHub Container Registry

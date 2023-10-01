@@ -1,10 +1,10 @@
-FROM container-registry.oracle.com/java/jdk-no-fee-term:17.0.8-oraclelinux8 AS base
+FROM container-registry.oracle.com/java/jdk-no-fee-term:21-oraclelinux8 AS base
 
 
 FROM base AS buidler
 
 WORKDIR /opt/app
-COPY ./build/libs/gourami-app.jar gourami-app.jar
+COPY ./target/gourami-app.jar gourami-app.jar
 RUN mkdir extracted \
     && java -Djarmode=layertools -jar gourami-app.jar extract --destination extracted
 
