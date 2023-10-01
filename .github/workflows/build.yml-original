@@ -10,20 +10,15 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
 
-      - name: Set up Oracle JDK 17.0.8
+      - name: Set up Oracle JDK 21
         uses: oracle-actions/setup-java@1f72fc84c0ae0b8ac40bfa0cfb3935ac9a28ffb7
         with:
           website: oracle.com
-          release: 17
-          version: 17.0.8
+          release: 21
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@ccb4328a959376b642e027874838f60f8e596de3
-
-      - name: Build application
-        uses: gradle/gradle-build-action@749f47bda3e44aa060e82d7b3ef7e40d953bd629
-        with:
-          arguments: check bootJar
+      - name: Build and test the application
+        run: |
+          ./mvnw package
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@2b82ce82d56a2a04d2637cd93a637ae1b359c0a7
@@ -37,19 +32,16 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
-        with:
-          images: |
-            ${{ secrets.DOCKER_USERNAME }}/gourami-app
+      - name: Compute Git Commit Short SHA
+        id: commit-sha
+        run: |
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+      - name: Build and push the Container Image
+        uses: docker/build-push-action@4c1b68d83ad20cc1a09620ca477d5bbbb5fa14d0
         with:
           context: .
           file: ./container/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/gourami-app:${{ steps.commit-sha.outputs.short_sha }}
