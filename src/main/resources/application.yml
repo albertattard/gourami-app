@@ -1,18 +1,12 @@
+auth0:
+  audience: ${AUTH0_AUDIENCE}
+
 spring:
   security:
     oauth2:
-      client:
-        registration:
-          auth0:
-            client-id: ${AUTH0_CLIENT_ID}
-            client-secret: ${AUTH0_CLIENT_SECRET}
-            scope:
-              - openid
-              - profile
-              - email
-        provider:
-          auth0:
-            issuer-uri: ${AUTH0_ISSUER_URI}
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI}
 
 server:
   servlet:
@@ -22,3 +16,8 @@ management:
   endpoints:
     web:
       base-path: /public/actuator
+
+logging:
+  level:
+    root: INFO
+    gourami: DEBUG
